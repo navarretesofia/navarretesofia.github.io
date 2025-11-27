@@ -1,69 +1,118 @@
+let font;
+let totalPoints = 2000;  
+let pts = [];
+let state = true;
+let numbers = ["uno", "dos", "tres", "cuatro","cinco","seis","siete","ocho","nueve","diez"];
+let numbersIndex = 0;
 
-let letras = ["F", "A", "S", "T", "E", "R",]
-let spacing = 100;
-let amplitude = 60;
-let speed = 0.05;
-let phaseOffset = 1;
-let letterSize=50;
-
-
-function setup() {
-	createCanvas(windowWidth,windowHeight);
-	rectMode (CENTER);
-	textFont("Silkscreen");
-	textAlign(CENTER,CENTER);	
+function preload() {
+  font = 'Momo Trust Display';
 }
 
-function  draw() {
-	background("black");
+function setup() {
+  createCanvas(windowWidth, windowHeight);
+  textFont(font);
+  textSize(200);
 
+  for (let i = 0; i < totalPoints; i++) {
+    pts.push({
+      x: random(width),
+      y: random(height),
+      tx: random(width),
+      ty: random(height),
+      vx: (10),
+      vy: (10)
+    });
+  }
 
-	if (amplitude>300) {
-		fill("red");
-		textSize(400);
+  setTargets(numbers[numbersIndex]);
+}
 
-let shakeX = random(-2,2);
-let shakeY = random(-2,2);
+function draw() {
+  background(20);
 
+  if (state) {
+    moveFreely();
+  } else {
+    moveToWord();
+  }
 
-		text("STOP", width/2+shakeX, height/2+shakeY);
-		return;
+  drawPoints();
+}
 
+function moveFreely() {
+  for (let p of pts) {
+    p.x += p.vx;
+    p.y += p.vy;
 
-	}
+    if (p.x < 0 || p.x > width) p.vx *= -1;
+    if (p.y < 0 || p.y > height) p.vy *= -1;
+  }
+}
 
+function setTargets(word) {
+  let bounds = textBounds(word);
+  let wordPoints = createWordPoints(word, bounds);
 
+  for (let i = 0; i < pts.length; i++) {
+    let t = wordPoints[i % wordPoints.length];
+    pts[i].tx = t.x;
+    pts[i].ty = t.y;
+  }
+}
 
-	fill("blue")
+function textBounds(word) {
+  let w = textWidth(word);
+  let h = 200;
+  return { x: (width - w) / 2, y: height / 2, w, h };
+}
 
-	let totalWidth = (letras.length -1)* spacing;
-	let startX = (width - totalWidth)/2;
+function createWordPoints(word, bounds) {
+  let arr = [];
+  let sample = 0.5;
 
-	for (let i=0; i<letras.length; i++) {
+  let g = createGraphics(width, height);
+  g.pixelDensity(1);
+  g.background(0);
+  g.fill(255);
+  g.textFont(font);
+  g.textSize(200);
+  g.text(word, bounds.x, bounds.y);
 
-		let x= startX+ i * spacing; 
+  g.loadPixels();
 
-		let y = height/2 + sin(frameCount * speed + i * phaseOffset) * amplitude;
-	
-		fill("white");
-		textSize(letterSize)
-		text(letras[i], x, y);
-		
-	}
+  for (let x = 0; x < width; x += 6) {
+    for (let y = 0; y < height; y += 6) {
+      let idx = (x + y * width) * 4;
+      if (g.pixels[idx] > 200) {
+        arr.push({ x, y });
+      }
+    }
+  }
 
-	function windowResized() {
-		resizeCanvas(windowWidth, windowHeight);
-	}
+  return arr;
+}
 
+function moveToWord() {
+  for (let p of pts) {
+    p.x = lerp(p.x, p.tx, 0.08);
+    p.y = lerp(p.y, p.ty, 0.08);
+  }
+}
 
-	}
+function drawPoints() {
+  noStroke();
+  fill(255);
+  for (let p of pts) {
+    circle(p.x, p.y, 4);
+  }
+}
 
-		function mousePressed() { 
-		amplitude+=10;
-		speed+=0.05;
-		spacing+=10;
-		letterSize+=10;
+function mousePressed() {
+  state = !state;
 
-	}
-
-
+  if (!state) {
+    numbersIndex = (numbersIndex + 1) % numbers.length;
+    setTargets(numbers[numbersIndex]);
+  }
+}
