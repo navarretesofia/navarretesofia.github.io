@@ -1,7 +1,7 @@
 let font;
 let totalPoints = 2000;  
 let pts = [];
-let state = false;                
+let state = true;
 let numbers = ["uno", "dos", "tres", "cuatro","cinco","seis","siete","ocho","nueve","diez"];
 let numbersIndex = 0;
 
@@ -20,17 +20,12 @@ function setup() {
       y: random(height),
       tx: random(width),
       ty: random(height),
-      vx: random(-7, 7),
-      vy: random(-7, 7)
+      vx: (10),
+      vy: (10)
     });
   }
 
   setTargets(numbers[numbersIndex]);
-
-  for (let p of pts) {
-    p.x = p.tx;
-    p.y = p.ty;
-  }
 }
 
 function draw() {
@@ -74,6 +69,8 @@ function textBounds(word) {
 
 function createWordPoints(word, bounds) {
   let arr = [];
+  let sample = 0.5;
+
   let g = createGraphics(width, height);
   g.pixelDensity(1);
   g.background(0);
@@ -117,15 +114,5 @@ function mousePressed() {
   if (!state) {
     numbersIndex = (numbersIndex + 1) % numbers.length;
     setTargets(numbers[numbersIndex]);
-  } else {
-    for (let p of pts) {
-      p.vx = random(-7, 7);
-      p.vy = random(-7, 7);
-    }
   }
-}
-
-function windowResized() {
-  resizeCanvas(windowWidth, windowHeight);
-  setTargets(numbers[numbersIndex]);
 }
